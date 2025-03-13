@@ -72,7 +72,7 @@ namespace Celeste.Mod.Styline {
                 Vector2 off = AccessoryData.HairOffsets[hair.Sprite.HairFrame];
                 if(float.IsNaN(off.X) || float.IsNaN(off.Y)) return;
 
-                Vector2 scale = hair.GetHairScale(0);
+                Vector2 scale = hair.PublicGetHairScale(0);
                 if(hair.Entity is Actor act && (GH_IsActorInverted?.Invoke(act) ?? false)) scale.Y *= -1;
 
                 int idx = hair.Sprite.HairFrame;

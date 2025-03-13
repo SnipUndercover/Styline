@@ -59,16 +59,16 @@ namespace Celeste.Mod.Styline {
             settingsDirty = true;
         }
 
-        private void LevelBeginHook(On.Celeste.Level.orig_Begin orig, Level level) {
-            UpdatePlayerAttributes();
+        private static void LevelBeginHook(On.Celeste.Level.orig_Begin orig, Level level) {
+            Instance.UpdatePlayerAttributes();
             orig(level);
         }
 
-        private void LevelUpdateHook(On.Celeste.Level.orig_Update orig, Level level) {
-            if(settingsDirty) {
-                settingsDirty = false;
-                settingsContentHandler?.Reload();
-                UpdatePlayerAttributes();
+        private static void LevelUpdateHook(On.Celeste.Level.orig_Update orig, Level level) {
+            if(Instance.settingsDirty) {
+                Instance.settingsDirty = false;
+                Instance.settingsContentHandler?.Reload();
+                Instance.UpdatePlayerAttributes();
             }
             orig(level);
         }

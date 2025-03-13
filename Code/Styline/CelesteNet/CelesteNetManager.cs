@@ -51,7 +51,7 @@ namespace Celeste.Mod.Styline {
         public void Handle(CelesteNetConnection con, DataPlayerInfo data) {
             if(!string.IsNullOrEmpty(data.DisplayName)) return;
 
-            MainThreadHelper.Do(() => {
+            MainThreadHelper.Schedule(() => {
                 //Dispose processor
                 if(!ghostProcessors.TryRemove(data, out PlayerProcessor processor)) return;
                 processor.Dispose();
@@ -61,7 +61,7 @@ namespace Celeste.Mod.Styline {
         public void Handle(CelesteNetConnection con, DataPlayerAttributes data) {
             if(data.Player == clientCtx.Client?.PlayerInfo) return;
 
-            MainThreadHelper.Do(() => {
+            MainThreadHelper.Schedule(() => {
                 //Get and update processor
                 PlayerProcessor processor = ghostProcessors.GetOrAdd(data.Player, _ => {
                     return new PlayerProcessor($"styline-ghost-{data.Player.ID}", e => e is Ghost ghost && ghost.PlayerInfo == data.Player, false);

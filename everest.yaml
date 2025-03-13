@@ -1,9 +1,9 @@
 - Name: Styline
-  Version: 1.0.3
+  Version: 1.0.4
   DLL: Styline.dll
   Dependencies:
     - Name: Everest
-      Version: 1.0.0
+      Version: 1.5416.0
     - Name: Procedurline
       Version: 2.0.8
   OptionalDependencies:

@@ -1,49 +1,110 @@
 <Project Sdk="Microsoft.NET.Sdk">
+
     <PropertyGroup>
-        <TargetFramework>net452</TargetFramework>
-        <LangVersion>8.0</LangVersion>
-        <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>None</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
-        <CelesteGamePath Condition="'$(CELESTEGAMEPATH)' == ''">..\..\..\..</CelesteGamePath>
-        <PathMap>$(MSBuildProjectDirectory)=X:\Styline\</PathMap>
+        <TargetFramework>net7.0</TargetFramework>
+        <AssemblyName>Styline</AssemblyName>
+        <RootNamespace>Celeste.Mod.Styline</RootNamespace>
+        <LangVersion>latest</LangVersion>
+        <CelestePrefix Condition="'$(CelestePrefix)' == '' And Exists('..\..\..\..\Celeste.dll')">..\..\..\..</CelestePrefix>
+        <CelestePrefix Condition="'$(CelestePrefix)' == ''">lib-stripped</CelestePrefix>
+        <ZippedFiles>..\..\everest.yaml;..\..\Styline.dll;..\..\Styline.pdb;..\..\Audio\**\*.*;..\..\Dialog\**\*.*;..\..\Graphics\**\*.*;..\..\Ahorn\**\*.*;..\..\Loenn\**\*.*;..\..\Content\**\*.*;..\..\LICENSE.txt</ZippedFiles>
     </PropertyGroup>
 
+    <!--Disable "Copy Local" for all references-->
     <ItemDefinitionGroup>
-        <PackageReference PrivateAssets="all" ExcludeAssets="runtime" />
-        <Reference Private="false" />
+        <PackageReference PrivateAssets="all" ExcludeAssets="runtime"/>
+        <Reference Private="false"/>
     </ItemDefinitionGroup>
 
     <ItemGroup>
-        <PackageReference Include="MonoMod" Version="22.5.1.1" />
-        <PackageReference Include="MonoMod.RuntimeDetour" Version="22.5.1.1" />
+        <PackageReference Include="MonoMod.RuntimeDetour" Version="25.0.2" PrivateAssets="all" ExcludeAssets="runtime"/>
+        <PackageReference Include="MonoMod.Patcher" Version="25.0.0-prerelease.2"/>
+        <PackageReference Include="CelesteAnalyzer" Version="*"/>
     </ItemGroup>
 
     <ItemGroup>
-        <Reference Include="Celeste" HintPath="$(CELESTEGAMEPATH)\Celeste.exe" />
-        <Reference Include="MMHOOK_Celeste" HintPath="$(CELESTEGAMEPATH)\MMHOOK_Celeste.dll" />
-        <Reference Include="YamlDotNet" HintPath="$(CELESTEGAMEPATH)\YamlDotNet.dll" />
-
-        <Reference Include="Celeste" HintPath="Libraries\Procedurline.dll" />
-        <Reference Include="Celeste" HintPath="Libraries\CelesteNet.Shared.dll" />
-        <Reference Include="Celeste" HintPath="Libraries\CelesteNet.Client.dll" />
+        <PackageReference Include="CelesteMod.Publicizer" Version="*" CelesteAssembly="$(CelestePrefix)\Celeste.dll"/>
+        <Reference Include="$(CelestePrefix)\MMHOOK_Celeste.dll" Private="false"/>
+        <Reference Include="$(CelestePrefix)\FNA.dll" Private="false"/>
+        <Reference Include="$(CelestePrefix)\YamlDotNet.dll" Private="false"/>
     </ItemGroup>
 
-    <Choose>
-        <When Condition="'$(OS)' != 'Windows_NT' Or Exists('$(CELESTEGAMEPATH)\FNA.dll')">
-            <ItemGroup>
-                <Reference Include="FNA" HintPath="$(CELESTEGAMEPATH)\FNA.dll" />
-            </ItemGroup>
-        </When>
+    <ItemGroup>
+        <!-- Dependencies -->
+        <Reference Include="Procedurline" HintPath="Libraries\Procedurline.dll"/>
+        <Reference Include="CelesteNet.Shared" HintPath="Libraries\CelesteNet.Shared.dll"/>
+        <Reference Include="CelesteNet.Client" HintPath="Libraries\CelesteNet.Client.dll"/>
+    </ItemGroup>
 
-        <Otherwise>
-            <ItemGroup>
-                <Reference Include="Microsoft.Xna.Framework" HintPath="$(WINDIR)\Microsoft.NET\assembly\GAC_32\Microsoft.Xna.Framework\v4.0_4.0.0.0__842cf8be1de50553\Microsoft.Xna.Framework.dll" />
-                <Reference Include="Microsoft.Xna.Framework.Game" HintPath="$(WINDIR)\Microsoft.NET\assembly\GAC_32\Microsoft.Xna.Framework.Game\v4.0_4.0.0.0__842cf8be1de50553\Microsoft.Xna.Framework.Game.dll" />
-                <Reference Include="Microsoft.Xna.Framework.Graphics" HintPath="$(WINDIR)\Microsoft.NET\assembly\GAC_32\Microsoft.Xna.Framework.Graphics\v4.0_4.0.0.0__842cf8be1de50553\Microsoft.Xna.Framework.Graphics.dll" />
-            </ItemGroup>
-        </Otherwise>
-    </Choose>
-
-    <Target Name="CopyDLL" AfterTargets="Build">
-        <Copy SourceFiles="$(TargetPath)" DestinationFolder="../.."/>
+    <Target Name="CopyFiles" AfterTargets="Build" Inputs="$(OutputPath)\$(AssemblyName).dll;$(OutputPath)\$(AssemblyName).pdb" Outputs="..\..\$(AssemblyName).dll;..\..\$(AssemblyName).pdb">
+        <Copy SourceFiles="$(OutputPath)\$(AssemblyName).dll" DestinationFolder="..\.."/>
+        <Copy SourceFiles="$(OutputPath)\$(AssemblyName).pdb" DestinationFolder="..\.."/>
     </Target>
+
+    <Target Name="PackageMod" AfterTargets="CopyFiles" Inputs="$(ZippedFiles)" Outputs="..\..\Styline.zip" Condition="'$(Configuration)' == 'Release'">
+        <ItemGroup>
+            <FilesToPackage Include="$(ZippedFiles)"/>
+        </ItemGroup>
+        <PackageMod Files="@(FilesToPackage)" OutputPath="..\..\Styline.zip"/>
+    </Target>
+
+    <PropertyGroup>
+        <PathMap>$(MSBuildProjectDirectory)=X:\Styline\</PathMap>
+    </PropertyGroup>
+
+    <!-- Inline task used to create a .zip for the mod -->
+    <UsingTask TaskName="PackageMod"
+               TaskFactory="RoslynCodeTaskFactory"
+               AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+        <ParameterGroup>
+            <Files ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true"/>
+            <OutputPath ParameterType="System.String" Required="true"/>
+        </ParameterGroup>
+        <Task>
+            <Using Namespace="System.IO"/>
+            <Using Namespace="System.IO.Compression"/>
+            <Code Type="Fragment" Language="cs">
+                <![CDATA[
+                var projectDir = Path.Combine(@"$(ProjectDir)", @"..\.."); // Go two levels up, since we're inside the 'Source/Styline' directory
+                projectDir = Uri.UnescapeDataString(projectDir);
+            
+                if (File.Exists(OutputPath))
+                    File.Delete(OutputPath);
+
+                using (ZipArchive zip = ZipFile.Open(OutputPath, ZipArchiveMode.Create))
+                {
+                    foreach (var file in Files)
+                    {
+                        string filePath = file.GetMetadata("FullPath");
+                        string entryName = GetRelativePath(projectDir, filePath);
+                        
+                        zip.CreateEntryFromFile(filePath, entryName);
+                    }
+                }
+    
+                string GetRelativePath(string fromPath, string toPath)
+                {
+                    if (string.IsNullOrEmpty(fromPath)) throw new ArgumentNullException(nameof(fromPath));
+                    if (string.IsNullOrEmpty(toPath))   throw new ArgumentNullException(nameof(toPath));
+                
+                    Uri fromUri = new Uri(fromPath);
+                    Uri toUri = new Uri(toPath);
+                
+                    if (fromUri.Scheme != toUri.Scheme) { return toPath; } // path can't be made relative.
+                
+                    Uri relativeUri = fromUri.MakeRelativeUri(toUri);
+                    string relativePath = Uri.UnescapeDataString(relativeUri.ToString());
+                
+                    if (toUri.Scheme.Equals("file", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        relativePath = relativePath.Replace(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+                    }
+                
+                    return relativePath;
+                }
+            ]]>
+            </Code>
+        </Task>
+    </UsingTask>
+
 </Project>
