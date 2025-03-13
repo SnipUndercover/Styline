@@ -1,6 +1,6 @@
 triggers.Styline/ChangePlayerAttributes.placements.name.rectangle=Change Player Attributes
 
-triggers.Styline/ChangePlayerAttributes.attributes.description.applyImmediately=Whether the attributes should be applied immediately when the trigger loads, instead of on enter.
+triggers.Styline/ChangePlayerAttributes.attributes.description.applyImmediately=Whether the trigger should be activated immediately when it loads, on top of activating on enter.
 triggers.Styline/ChangePlayerAttributes.attributes.description.applyOnce=Whether the attributes should only be applied once.\nChecks for a flag named "[room]:[entityid]Applied", where [room] is the room name, and [entityid] is the entity ID in Lönn.
 triggers.Styline/ChangePlayerAttributes.attributes.description.hairColor=The path to the YAML file containing the hair color.\nRelative to "Content/", without extension.
 triggers.Styline/ChangePlayerAttributes.attributes.description.hairStyle=The path to the YAML file containing the hair style.\nRelative to "Content/", without extension.
