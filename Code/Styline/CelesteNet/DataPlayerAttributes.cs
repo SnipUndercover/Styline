@@ -70,6 +70,7 @@ namespace Celeste.Mod.Styline {
                 ShirtColorData shirtColor = default;
                 shirtColor.PrimaryColor = reader.ReadColorNoA();
                 shirtColor.SecondaryColor = reader.ReadColorNoA();
+                shirtColor.TertiaryColor = reader.ReadColorNoA();
                 ShirtColor = shirtColor;
 
                 BlushColor = reader.ReadColor();
@@ -98,6 +99,7 @@ namespace Celeste.Mod.Styline {
                 //Write other data
                 writer.WriteNoA(ShirtColor.PrimaryColor);
                 writer.WriteNoA(ShirtColor.SecondaryColor);
+                writer.WriteNoA(ShirtColor.TertiaryColor);
 
                 writer.Write(BlushColor);
             }
