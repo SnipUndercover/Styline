@@ -7,10 +7,12 @@ namespace Celeste.Mod.Styline {
     public struct ShirtColorData {
         public Color PrimaryColor;
         public Color SecondaryColor;
+        public Color TertiaryColor;
 
         public ShirtColorData RemoveAlpha() => new ShirtColorData() {
             PrimaryColor = PrimaryColor.RemoveAlpha(),
-            SecondaryColor = SecondaryColor.RemoveAlpha()
+            SecondaryColor = SecondaryColor.RemoveAlpha(),
+			TertiaryColor = TertiaryColor.RemoveAlpha()
         };
     };
 
@@ -35,6 +37,7 @@ namespace Celeste.Mod.Styline {
                     //Replace color
                     if(data.TextureData[x,y] == PlayerUtils.SHIRT_PRIMARY_COLOR) data.TextureData[x,y] = ColorData.PrimaryColor;
                     else if(data.TextureData[x,y] == PlayerUtils.SHIRT_SECONDARY_COLOR) data.TextureData[x,y] = ColorData.SecondaryColor;
+                    else if(data.TextureData[x,y] == Calc.HexToColor("#4D57AB")) data.TextureData[x,y] = ColorData.TertiaryColor;
                 }
             }
 
